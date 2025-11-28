@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect, FormEvent, ChangeEvent } from "react";
+import ReactMarkdown from "react-markdown";
 import "./ChatAssistant.css";
 
 // Use relative path for production (nginx proxy) or localhost for development
@@ -21,6 +22,7 @@ function ChatAssistant() {
   const [input, setInput] = useState<string>("");
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -29,6 +31,15 @@ function ChatAssistant() {
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
+
+  useEffect(() => {
+    if (isOpen) {
+      // Small delay to ensure the modal is rendered before focusing
+      setTimeout(() => {
+        inputRef.current?.focus();
+      }, 0);
+    }
+  }, [isOpen]);
 
   const toggleChat = () => {
     setIsOpen(!isOpen);
@@ -138,7 +149,11 @@ function ChatAssistant() {
                   className={`chat-assistant-message ${msg.role}`}
                 >
                   <div className="chat-assistant-message-content">
-                    {msg.content}
+                    {msg.role === "assistant" ? (
+                      <ReactMarkdown>{msg.content}</ReactMarkdown>
+                    ) : (
+                      msg.content
+                    )}
                   </div>
                 </div>
               ))}
@@ -156,6 +171,7 @@ function ChatAssistant() {
 
             <form className="chat-assistant-input" onSubmit={sendMessage}>
               <input
+                ref={inputRef}
                 type="text"
                 value={input}
                 onChange={handleInputChange}
