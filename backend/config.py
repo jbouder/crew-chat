@@ -19,6 +19,9 @@ class Settings:
     bedrock_model_id: str = os.getenv(
         "BEDROCK_MODEL_ID", "anthropic.claude-3-sonnet-20240229-v1:0"
     )
+    bedrock_knowledge_base_id: str = os.getenv("BEDROCK_KNOWLEDGE_BASE_ID", "").strip(
+        '"'
+    )
 
     # Server Configuration
     host: str = os.getenv("HOST", "0.0.0.0")
