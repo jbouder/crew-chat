@@ -8,6 +8,7 @@ An agentic chatbot application powered by CrewAI and AWS Bedrock, with a FastAPI
 - 🚀 CrewAI agent orchestration
 - ⚡ FastAPI backend with async support
 - 💬 Modern React chat UI
+- 🐳 Docker Compose support
 - 🔒 CORS enabled for local development
 
 ## Project Structure
@@ -19,6 +20,7 @@ crew-chat/
 │   ├── agents.py         # CrewAI agent configuration
 │   ├── config.py         # Configuration settings
 │   ├── requirements.txt  # Python dependencies
+│   ├── Dockerfile        # Backend container
 │   └── .env.example      # Environment variables template
 ├── frontend/
 │   ├── src/
@@ -27,18 +29,52 @@ crew-chat/
 │   │   │   └── ChatBox.css
 │   │   ├── App.jsx
 │   │   └── main.jsx
+│   ├── Dockerfile        # Frontend container
+│   ├── nginx.conf        # Nginx configuration
 │   └── package.json
+├── docker-compose.yml    # Docker Compose configuration
+├── .env.example          # Root environment variables
 └── README.md
 ```
 
 ## Prerequisites
 
-- Python 3.10+
-- Node.js 18+
+- Docker and Docker Compose (recommended)
+- Or for local development:
+  - Python 3.10+
+  - Node.js 18+
 - AWS account with Bedrock access
 - Configured AWS credentials
 
-## Setup
+## Quick Start with Docker Compose
+
+1. Clone the repository and navigate to it:
+   ```bash
+   git clone <repository-url>
+   cd crew-chat
+   ```
+
+2. Configure environment variables:
+   ```bash
+   cp .env.example .env
+   # Edit .env with your AWS credentials
+   ```
+
+3. Start the application:
+   ```bash
+   docker compose up --build
+   ```
+
+4. Access the application:
+   - Frontend: http://localhost:3000
+   - Backend API: http://localhost:8000
+
+To stop the application:
+```bash
+docker compose down
+```
+
+## Local Development Setup
 
 ### Backend
 

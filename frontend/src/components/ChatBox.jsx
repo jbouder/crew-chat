@@ -1,6 +1,9 @@
 import { useState, useRef, useEffect } from 'react';
 import './ChatBox.css';
 
+// Use relative path for production (nginx proxy) or localhost for development
+const API_BASE_URL = import.meta.env.PROD ? '/api' : 'http://localhost:8000';
+
 function ChatBox() {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
@@ -25,7 +28,7 @@ function ChatBox() {
     setIsLoading(true);
 
     try {
-      const response = await fetch('http://localhost:8000/chat', {
+      const response = await fetch(`${API_BASE_URL}/chat`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
