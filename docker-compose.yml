@@ -1,4 +1,21 @@
 services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      - POSTGRES_USER=membercenter
+      - POSTGRES_PASSWORD=membercenter_password
+      - POSTGRES_DB=membercenter
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U membercenter -d membercenter"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
   backend:
     build:
       context: ./backend
@@ -13,6 +30,10 @@ services:
       - OPENAI_API_KEY=${OPENAI_API_KEY:-}
       - HOST=0.0.0.0
       - PORT=8000
+      - DATABASE_URL=postgresql://membercenter:membercenter_password@postgres:5432/membercenter
+    depends_on:
+      postgres:
+        condition: service_healthy
     restart: unless-stopped
 
   frontend:
@@ -24,3 +45,6 @@ services:
     depends_on:
       - backend
     restart: unless-stopped
+
+volumes:
+  postgres_data:
