@@ -19,20 +19,32 @@ The application includes an AI-powered chat assistant built with [CrewAI](https:
 
 The chat system uses specialized AI agents powered by AWS Bedrock:
 
-| Agent                         | Role                   | Description                                                                                                                                                 | Tools                                                                                                          |
-| ----------------------------- | ---------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------- |
-| **AI Assistant Coordinator**  | Main orchestrator      | Handles all user interactions, answers general questions using the knowledge base, and fetches personalized member data when needed                         | Get Member Profile, Get Current Benefits and Enrollments, Get Available Benefits, Get Benefit Coverage Summary |
-| **Member Profile Specialist** | Profile queries        | Retrieves personal information, military service details (branch, rank, active duty status), and membership information (member number, status, start date) | Get Member Profile                                                                                             |
-| **Benefits Specialist**       | Benefits & enrollments | Provides current enrollments, available plans, eligibility requirements, premium costs, beneficiary designations, and coverage summaries by category        | Get Current Benefits and Enrollments, Get Available Benefits, Get Benefit Coverage Summary                     |
+| Agent                                   | Role                      | Description                                                                                                                                                 | Tools                                                                                      |
+| --------------------------------------- | ------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------ |
+| **AI Assistant Coordinator**            | Main orchestrator         | Handles all user interactions, answers general questions using the knowledge base, and fetches personalized member data when needed                         | All tools listed below                                                                     |
+| **Member Profile Specialist**           | Profile queries           | Retrieves personal information, military service details (branch, rank, active duty status), and membership information (member number, status, start date) | Get Member Profile                                                                         |
+| **Benefits Specialist**                 | Benefits & enrollments    | Provides current enrollments, available plans, eligibility requirements, premium costs, beneficiary designations, and coverage summaries by category        | Get Current Benefits and Enrollments, Get Available Benefits, Get Benefit Coverage Summary |
+| **Premium Calculator Specialist**       | Quotes & cost comparisons | Calculates premium estimates, compares plans side-by-side, and helps estimate coverage needs based on income, dependents, and debts                         | Calculate Premium, Compare Plans, Estimate Coverage Needs                                  |
+| **Eligibility Verification Specialist** | Eligibility checks        | Verifies member eligibility for specific benefits, explains military status implications, and details documentation requirements for enrollment             | Check Eligibility, Get Military Status, Verify Documentation Requirements                  |
+| **Document Assistant Specialist**       | Forms & documentation     | Helps members navigate forms and paperwork, explains required documents for various actions, and clarifies form fields                                      | Get Required Documents, Generate Form, Explain Form Fields                                 |
 
 ### Agent Tools
 
-| Tool                                     | Description                                                                                            |
-| ---------------------------------------- | ------------------------------------------------------------------------------------------------------ |
-| **Get Member Profile**                   | Retrieves the logged-in member's personal details, military service information, and membership status |
-| **Get Current Benefits and Enrollments** | Fetches active benefit enrollments with coverage details, premiums, and beneficiary information        |
-| **Get Available Benefits**               | Lists all available benefit plans with eligibility indicators based on the member's profile            |
-| **Get Benefit Coverage Summary**         | Provides a high-level summary of the member's total coverage grouped by category                       |
+| Tool                                     | Description                                                                                              |
+| ---------------------------------------- | -------------------------------------------------------------------------------------------------------- |
+| **Get Member Profile**                   | Retrieves the logged-in member's personal details, military service information, and membership status   |
+| **Get Current Benefits and Enrollments** | Fetches active benefit enrollments with coverage details, premiums, and beneficiary information          |
+| **Get Available Benefits**               | Lists all available benefit plans with eligibility indicators based on the member's profile              |
+| **Get Benefit Coverage Summary**         | Provides a high-level summary of the member's total coverage grouped by category                         |
+| **Calculate Premium**                    | Calculates monthly premium estimates based on coverage amount, age, and health factors                   |
+| **Compare Plans**                        | Compares multiple benefit plans within a category with side-by-side feature and cost comparison          |
+| **Estimate Coverage Needs**              | Analyzes income, dependents, and debts to recommend appropriate coverage levels                          |
+| **Check Eligibility**                    | Verifies if the member qualifies for a specific benefit based on age, military status, and other factors |
+| **Get Military Status**                  | Retrieves the member's military service status and explains benefit eligibility implications             |
+| **Verify Documentation Requirements**    | Lists required and optional documents needed to enroll in a specific benefit                             |
+| **Get Required Documents**               | Provides document checklists for various actions (enrollment, claims, beneficiary changes, etc.)         |
+| **Generate Form**                        | Returns information about specific forms including download links and completion tips                    |
+| **Explain Form Fields**                  | Provides detailed explanations of form fields to help members complete paperwork correctly               |
 
 ### Knowledge Base Integration
 
@@ -108,19 +120,33 @@ member-center/
    cd crew-chat
    ```
 
-2. Start all services (PostgreSQL, Backend, Frontend):
+2. Copy the environment example file and update with your values:
+
+   ```bash
+   cp .env.example .env
+   ```
+
+   Edit `.env` and configure your AWS credentials:
+
+   - `AWS_ACCESS_KEY_ID` - Your AWS access key
+   - `AWS_SECRET_ACCESS_KEY` - Your AWS secret key
+   - `AWS_REGION` - AWS region (default: us-east-1)
+   - `BEDROCK_MODEL_ID` - Bedrock model ID (default: us.anthropic.claude-sonnet-4-20250514-v1:0)
+   - `BEDROCK_KNOWLEDGE_BASE_ID` - Your Bedrock Knowledge Base ID
+
+3. Start all services (PostgreSQL, Backend, Frontend):
 
    ```bash
    docker compose up --build
    ```
 
-3. Access the application:
+4. Access the application:
 
    - Frontend: http://localhost:3000
    - Backend API: http://localhost:8000
    - API Docs: http://localhost:8000/docs
 
-4. Demo credentials:
+5. Demo credentials:
    - **Email**: john.doe@military.mil
    - **Password**: demo
 
