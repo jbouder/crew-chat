@@ -1,17 +1,16 @@
 """CrewAI agent configuration and crew setup."""
 
-from crewai import Agent, Crew, Process, Task
-from langchain_aws import ChatBedrock
+from crewai import Agent, Crew, Process, Task, LLM
 
 from config import settings
 
 
 def get_bedrock_llm():
-    """Create and return a Bedrock LLM instance."""
-    return ChatBedrock(
-        model_id=settings.bedrock_model_id,
-        region_name=settings.aws_region,
-        model_kwargs={"max_tokens": 4096, "temperature": 0.7},
+    """Create and return a Bedrock LLM instance for CrewAI."""
+    return LLM(
+        model=f"bedrock/{settings.bedrock_model_id}",
+        temperature=0.7,
+        max_tokens=4096,
     )
 
 
