@@ -1,58 +1,74 @@
-import { useState, useRef, useEffect } from 'react';
-import './ChatBox.css';
+import { useState, useRef, useEffect, FormEvent, ChangeEvent } from "react";
+import "./ChatBox.css";
 
 // Use relative path for production (nginx proxy) or localhost for development
-const API_BASE_URL = import.meta.env.PROD ? '/api' : 'http://localhost:8000';
+const API_BASE_URL = import.meta.env.PROD ? "/api" : "http://localhost:8000";
+
+interface Message {
+  role: "user" | "assistant";
+  content: string;
+}
+
+interface ChatResponse {
+  response: string;
+}
 
 function ChatBox() {
-  const [messages, setMessages] = useState([]);
-  const [input, setInput] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
-  const messagesEndRef = useRef(null);
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [input, setInput] = useState<string>("");
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
 
-  const sendMessage = async (e) => {
+  const sendMessage = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!input.trim() || isLoading) return;
 
-    const userMessage = { role: 'user', content: input };
+    const userMessage: Message = { role: "user", content: input };
     setMessages((prev) => [...prev, userMessage]);
-    setInput('');
+    setInput("");
     setIsLoading(true);
 
     try {
       const response = await fetch(`${API_BASE_URL}/chat`, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({ message: input }),
       });
 
       if (!response.ok) {
-        throw new Error('Failed to get response');
+        throw new Error("Failed to get response");
       }
 
-      const data = await response.json();
-      const assistantMessage = { role: 'assistant', content: data.response };
+      const data: ChatResponse = await response.json();
+      const assistantMessage: Message = {
+        role: "assistant",
+        content: data.response,
+      };
       setMessages((prev) => [...prev, assistantMessage]);
     } catch (error) {
-      const errorMessage = {
-        role: 'assistant',
-        content: 'Sorry, I encountered an error. Please try again.',
+      const errorMessage: Message = {
+        role: "assistant",
+        content: "Sorry, I encountered an error. Please try again.",
       };
       setMessages((prev) => [...prev, errorMessage]);
-      console.error('Chat error:', error);
+      console.error("Chat error:", error);
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
+    setInput(e.target.value);
   };
 
   return (
@@ -90,7 +106,7 @@ function ChatBox() {
         <input
           type="text"
           value={input}
-          onChange={(e) => setInput(e.target.value)}
+          onChange={handleInputChange}
           placeholder="Type your message..."
           disabled={isLoading}
         />
