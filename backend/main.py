@@ -19,6 +19,7 @@ from models import (
     MembershipStatus,
     BenefitCategory,
 )
+from agents import process_message
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -159,6 +160,18 @@ class DashboardResponse(BaseModel):
     total_coverage: float
 
 
+class ChatRequest(BaseModel):
+    """Chat request model."""
+
+    message: str
+
+
+class ChatResponse(BaseModel):
+    """Chat response model."""
+
+    response: str
+
+
 # ============ Health Check Endpoints ============
 
 
@@ -172,6 +185,20 @@ async def root():
 async def health():
     """Health check endpoint."""
     return {"status": "healthy"}
+
+
+# ============ Chat Endpoint ============
+
+
+@app.post("/api/chat", response_model=ChatResponse)
+async def chat(request: ChatRequest):
+    """Process a chat message through the CrewAI agent."""
+    try:
+        response = await process_message(request.message)
+        return ChatResponse(response=response)
+    except Exception as e:
+        logger.error(f"Chat error: {e}")
+        raise HTTPException(status_code=500, detail="Failed to process message") from e
 
 
 # ============ Member Endpoints ============

@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import Navigation from "./components/Navigation";
+import ChatAssistant from "./components/ChatAssistant";
 import Home from "./pages/Home";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
@@ -82,6 +83,7 @@ function App() {
         <footer className="footer">
           <p>© 2024 Patriot Life Insurance. Serving Those Who Serve.</p>
         </footer>
+        <ChatAssistant />
       </div>
     </BrowserRouter>
   );
