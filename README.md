@@ -7,8 +7,41 @@ A Member Center application for Patriot Life Insurance, a fictitious life insura
 - 🏠 **Home Page** - Information about benefits for non-members
 - 📊 **Member Dashboard** - View membership details, active benefits, and coverage summary
 - 🔍 **Benefit Search & Enrollment** - Browse and enroll in available benefits
+- 💬 **AI Chat Assistant** - CrewAI-powered chatbot with personalized member support
 - 🗃️ **PostgreSQL Database** - Store member profiles and benefit enrollments
 - 🐳 **Docker Compose** - Easy deployment with all services
+
+## AI Chat Assistant
+
+The application includes an AI-powered chat assistant built with [CrewAI](https://www.crewai.com/) and AWS Bedrock. The assistant can answer questions about insurance products and provide personalized information for logged-in members.
+
+### Agents
+
+The chat system uses specialized AI agents powered by AWS Bedrock:
+
+| Agent                         | Role                   | Description                                                                                                                                                 | Tools                                                                                                          |
+| ----------------------------- | ---------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------- |
+| **AI Assistant Coordinator**  | Main orchestrator      | Handles all user interactions, answers general questions using the knowledge base, and fetches personalized member data when needed                         | Get Member Profile, Get Current Benefits and Enrollments, Get Available Benefits, Get Benefit Coverage Summary |
+| **Member Profile Specialist** | Profile queries        | Retrieves personal information, military service details (branch, rank, active duty status), and membership information (member number, status, start date) | Get Member Profile                                                                                             |
+| **Benefits Specialist**       | Benefits & enrollments | Provides current enrollments, available plans, eligibility requirements, premium costs, beneficiary designations, and coverage summaries by category        | Get Current Benefits and Enrollments, Get Available Benefits, Get Benefit Coverage Summary                     |
+
+### Agent Tools
+
+| Tool                                     | Description                                                                                            |
+| ---------------------------------------- | ------------------------------------------------------------------------------------------------------ |
+| **Get Member Profile**                   | Retrieves the logged-in member's personal details, military service information, and membership status |
+| **Get Current Benefits and Enrollments** | Fetches active benefit enrollments with coverage details, premiums, and beneficiary information        |
+| **Get Available Benefits**               | Lists all available benefit plans with eligibility indicators based on the member's profile            |
+| **Get Benefit Coverage Summary**         | Provides a high-level summary of the member's total coverage grouped by category                       |
+
+### Knowledge Base Integration
+
+The assistant integrates with AWS Bedrock Knowledge Base to retrieve relevant information about insurance products from documentation stored in S3. This enables the agent to answer detailed questions about:
+
+- SGLI, VGLI, FSGLI, and S-DVI coverage
+- Disability and accident protection plans
+- Critical illness and supplemental life insurance
+- Eligibility requirements and enrollment procedures
 
 ## Screenshots
 
@@ -26,6 +59,7 @@ The application includes:
 member-center/
 ├── backend/
 │   ├── main.py           # FastAPI application with API endpoints
+│   ├── agents.py         # CrewAI agent definitions and tools
 │   ├── models.py         # SQLAlchemy database models
 │   ├── database.py       # Database connection and seeding
 │   ├── config.py         # Configuration settings
@@ -39,7 +73,8 @@ member-center/
 │   │   │   ├── Dashboard.tsx   # Member dashboard
 │   │   │   └── Benefits.tsx    # Benefit search & enrollment
 │   │   ├── components/
-│   │   │   └── Navigation.tsx  # Navigation bar
+│   │   │   ├── Navigation.tsx  # Navigation bar
+│   │   │   └── ChatAssistant.tsx # AI chat widget
 │   │   ├── api.ts              # API service
 │   │   ├── types.ts            # TypeScript types
 │   │   ├── App.tsx             # Main app with routing
@@ -47,6 +82,11 @@ member-center/
 │   ├── Dockerfile        # Frontend container
 │   ├── nginx.conf        # Nginx configuration
 │   └── package.json
+├── data/                 # Knowledge base documents
+│   ├── sgli.md
+│   ├── vgli.md
+│   ├── fsgli.md
+│   └── ...
 ├── docker-compose.yml    # Docker Compose with PostgreSQL
 └── README.md
 ```
@@ -174,6 +214,10 @@ The UI will be available at http://localhost:5173
 - `GET /` - Health check
 - `GET /health` - Health status
 
+### Chat
+
+- `POST /api/chat` - Send a message to the AI assistant (accepts `message` and optional `user_id` for personalized responses)
+
 ### Members
 
 - `POST /api/members/login` - Member login
@@ -215,6 +259,7 @@ The UI will be available at http://localhost:5173
 ## Technologies
 
 - **Backend**: Python, FastAPI, SQLAlchemy, Pydantic
+- **AI/ML**: CrewAI, AWS Bedrock (Claude), AWS Bedrock Knowledge Base
 - **Frontend**: React, TypeScript, React Router, Vite
 - **Database**: PostgreSQL
 - **Deployment**: Docker, Nginx

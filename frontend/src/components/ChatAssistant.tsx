@@ -16,7 +16,11 @@ interface ChatResponse {
   response: string;
 }
 
-function ChatAssistant() {
+interface ChatAssistantProps {
+  memberId?: number;
+}
+
+function ChatAssistant({ memberId }: ChatAssistantProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState<string>("");
@@ -64,7 +68,10 @@ function ChatAssistant() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ message: input }),
+        body: JSON.stringify({
+          message: input,
+          user_id: memberId || null,
+        }),
       });
 
       if (!response.ok) {
@@ -141,6 +148,16 @@ function ChatAssistant() {
                 <div className="chat-assistant-welcome">
                   <p>👋 Hello! I'm your AI assistant.</p>
                   <p>How can I help you today?</p>
+                  {memberId ? (
+                    <p className="chat-assistant-personalized-note">
+                      ✓ You're logged in! I can help you with your profile,
+                      benefits, and coverage details.
+                    </p>
+                  ) : (
+                    <p className="chat-assistant-login-note">
+                      💡 Log in to ask about your personal profile and benefits.
+                    </p>
+                  )}
                 </div>
               )}
               {messages.map((msg, index) => (

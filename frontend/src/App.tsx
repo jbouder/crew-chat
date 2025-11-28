@@ -83,7 +83,7 @@ function App() {
         <footer className="footer">
           <p>© 2024 Patriot Life Insurance. Serving Those Who Serve.</p>
         </footer>
-        <ChatAssistant />
+        <ChatAssistant memberId={member?.id} />
       </div>
     </BrowserRouter>
   );

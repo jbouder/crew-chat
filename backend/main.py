@@ -164,6 +164,7 @@ class ChatRequest(BaseModel):
     """Chat request model."""
 
     message: str
+    user_id: Optional[int] = None
 
 
 class ChatResponse(BaseModel):
@@ -192,9 +193,14 @@ async def health():
 
 @app.post("/api/chat", response_model=ChatResponse)
 async def chat(request: ChatRequest):
-    """Process a chat message through the CrewAI agent."""
+    """
+    Process a chat message through the CrewAI agent.
+
+    If a user_id is provided, the agent will have access to the member's
+    profile and benefit data for personalized responses.
+    """
     try:
-        response = await process_message(request.message)
+        response = await process_message(request.message, user_id=request.user_id)
         return ChatResponse(response=response)
     except Exception as e:
         logger.error(f"Chat error: {e}")
