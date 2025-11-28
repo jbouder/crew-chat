@@ -101,6 +101,12 @@
   opacity: 0.9;
 }
 
+.chat-assistant-header-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.chat-assistant-clear,
 .chat-assistant-close {
   background: rgba(255, 255, 255, 0.2);
   border: none;
@@ -115,10 +121,17 @@
   transition: background 0.2s;
 }
 
+.chat-assistant-clear:hover:not(:disabled),
 .chat-assistant-close:hover {
   background: rgba(255, 255, 255, 0.3);
 }
 
+.chat-assistant-clear:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.chat-assistant-clear svg,
 .chat-assistant-close svg {
   width: 18px;
   height: 18px;
