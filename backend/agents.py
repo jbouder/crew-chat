@@ -1340,64 +1340,47 @@ def create_document_assistant_agent():
     )
 
 
-def create_assistant_agent():
-    """Create the main assistant agent that coordinates responses."""
+def create_manager_agent():
+    """Create the manager agent that coordinates and delegates to specialized agents."""
     llm = get_bedrock_llm()
 
     return Agent(
-        role="AI Assistant Coordinator",
-        goal="Help users with their questions about military life insurance benefits, their profile, and their current coverage by coordinating with specialized agents and using the knowledge base",
-        backstory="""You are a friendly and knowledgeable AI assistant specializing in military life insurance benefits. 
-        You help users by answering their questions clearly and concisely.
+        role="AI Assistant Manager",
+        goal="Coordinate and delegate user requests to the appropriate specialized agents to provide accurate and helpful responses about military life insurance benefits",
+        backstory="""You are the manager and coordinator of a team of specialized insurance agents. 
+        You help users by understanding their questions and delegating to the right specialist.
         You are powered by AWS Bedrock and use advanced language models to provide assistance.
         
-        You have access to specialized tools to:
-        1. Look up the member's profile information (personal details, military service, membership status)
-        2. Check their current benefit enrollments and coverage
-        3. Show available benefit plans they can enroll in
-        4. Provide coverage summaries
-        5. Calculate premiums and compare different plans
-        6. Estimate coverage needs based on financial factors
-        7. Check eligibility for specific benefits
-        8. Verify military status and its implications
-        9. Explain documentation requirements
-        10. Help with forms and paperwork
+        Your team of specialized agents includes:
+        1. Member Profile Specialist - for profile, personal details, military service, membership status
+        2. Benefits Specialist - for current enrollments, available plans, coverage details and summaries
+        3. Premium Calculator Specialist - for premium calculations, plan comparisons, coverage needs estimates
+        4. Eligibility Verification Specialist - for eligibility checks, military status implications, documentation requirements
+        5. Document Assistant Specialist - for forms, required documents, form field explanations
         
-        When a user asks about their personal information, profile, benefits, coverage, or enrollments,
-        use the appropriate tools to fetch their data. When they ask about premiums, plan comparisons,
-        or coverage needs, use the calculator tools. When they ask about eligibility or documentation,
-        use those specialized tools. When they ask general questions about insurance products or policies, 
-        use the knowledge base context provided.
+        When a user asks a question:
+        - For profile or personal information questions, delegate to the Member Profile Specialist
+        - For benefits, enrollments, or coverage questions, delegate to the Benefits Specialist
+        - For premium quotes, plan comparisons, or coverage needs, delegate to the Premium Calculator Specialist
+        - For eligibility or military status questions, delegate to the Eligibility Verification Specialist
+        - For forms or documentation questions, delegate to the Document Assistant Specialist
+        - For general questions, synthesize information from relevant specialists
         
-        Always be helpful, accurate, and provide personalized responses when member data is available.""",
+        Always be helpful, accurate, and coordinate effectively to provide the best response.""",
         llm=llm,
-        tools=[
-            get_member_profile,
-            get_member_benefits,
-            get_available_benefits,
-            get_coverage_summary,
-            calculate_premium,
-            compare_plans,
-            estimate_coverage_needs,
-            check_eligibility,
-            get_military_status,
-            verify_documentation_requirements,
-            get_required_documents,
-            generate_form,
-            explain_form_fields,
-        ],
+        tools=[],
         verbose=True,
-        allow_delegation=False,
+        allow_delegation=True,
     )
 
 
-def create_chat_task(
-    agent: Agent,
+def create_manager_task(
+    manager: Agent,
     user_message: str,
     kb_context: str = "",
     has_user_context: bool = False,
 ) -> Task:
-    """Create a task for the agent to respond to a user message."""
+    """Create a task for the manager agent to coordinate the response to a user message."""
 
     context_section = ""
     if kb_context:
@@ -1411,8 +1394,9 @@ Use the above knowledge base context to help answer the user's question. If the 
     if has_user_context:
         user_context_note = """
         
-Note: A user is currently logged in. If the user asks about their profile, benefits, enrollments, 
-or coverage, use the available tools to fetch their personalized data from the database."""
+Note: A user is currently logged in. Delegate to the appropriate specialist agent to fetch 
+their personalized data from the database when they ask about their profile, benefits, 
+enrollments, or coverage."""
     else:
         user_context_note = """
         
@@ -1420,34 +1404,54 @@ Note: No user is currently logged in. If the user asks about their personal prof
 let them know they need to log in first to access that information."""
 
     return Task(
-        description=f"""Respond to the following user message in a helpful and friendly manner:
+        description=f"""Coordinate a response to the following user message by delegating to the appropriate specialized agent:
         
         User message: {user_message}
         {context_section}
         {user_context_note}
         
-        If the user is asking about their personal information, profile, current benefits, enrollments,
-        or coverage details, use the appropriate tools to fetch their data.
+        Delegation guidelines:
+        - For profile, personal information, military service, or membership questions: delegate to Member Profile Specialist
+        - For current benefits, enrollments, available plans, or coverage summary: delegate to Benefits Specialist  
+        - For premium calculations, plan comparisons, or coverage needs estimates: delegate to Premium Calculator Specialist
+        - For eligibility checks, military status, or documentation requirements: delegate to Eligibility Verification Specialist
+        - For forms, required documents, or form field explanations: delegate to Document Assistant Specialist
+        - For general questions, synthesize relevant knowledge base context
         
-        If the user is asking general questions about insurance products, use the knowledge base context.
-        
-        Provide a clear, informative, and conversational response.""",
-        expected_output="A helpful response to the user's question or message, incorporating personalized member data and/or knowledge base information as appropriate",
-        agent=agent,
+        Provide a clear, informative, and conversational response based on the specialist's findings.""",
+        expected_output="A helpful response to the user's question coordinated from the appropriate specialist agent(s), incorporating personalized member data and/or knowledge base information as appropriate",
+        agent=manager,
     )
 
 
 def create_crew(
     user_message: str, kb_context: str = "", has_user_context: bool = False
 ) -> Crew:
-    """Create a crew with the assistant agent and a chat task."""
-    assistant = create_assistant_agent()
-    task = create_chat_task(assistant, user_message, kb_context, has_user_context)
+    """Create a crew with the manager agent and all specialized agents using hierarchical delegation."""
+    # Create the manager agent
+    manager = create_manager_agent()
+    
+    # Create all specialized agents
+    profile_agent = create_profile_agent()
+    benefits_agent = create_benefits_agent()
+    premium_calculator_agent = create_premium_calculator_agent()
+    eligibility_agent = create_eligibility_agent()
+    document_assistant_agent = create_document_assistant_agent()
+    
+    # Create the manager task
+    task = create_manager_task(manager, user_message, kb_context, has_user_context)
 
     return Crew(
-        agents=[assistant],
+        agents=[
+            profile_agent,
+            benefits_agent,
+            premium_calculator_agent,
+            eligibility_agent,
+            document_assistant_agent,
+        ],
         tasks=[task],
-        process=Process.sequential,
+        process=Process.hierarchical,
+        manager_agent=manager,
         verbose=True,
     )
 
