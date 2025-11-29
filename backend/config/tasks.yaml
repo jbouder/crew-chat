@@ -1,0 +1,21 @@
+manager_task:
+  description: >
+    Coordinate a response to the following user message by delegating to the appropriate specialized agent:
+    
+    User message: {user_message}
+    {kb_context}
+    {user_context_note}
+    
+    Delegation guidelines:
+    - For profile, personal information, military service, or membership questions: delegate to Member Profile Specialist
+    - For current benefits, enrollments, available plans, or coverage summary: delegate to Benefits Specialist  
+    - For premium calculations, plan comparisons, or coverage needs estimates: delegate to Premium Calculator Specialist
+    - For eligibility checks, military status, or documentation requirements: delegate to Eligibility Verification Specialist
+    - For forms, required documents, or form field explanations: delegate to Document Assistant Specialist
+    - For general questions, synthesize relevant knowledge base context
+    
+    Provide a clear, informative, and conversational response based on the specialist's findings.
+  expected_output: >
+    A helpful response to the user's question coordinated from the appropriate specialist agent(s), 
+    incorporating personalized member data and/or knowledge base information as appropriate
+  agent: manager
