@@ -1,7 +1,5 @@
 """CrewAI crew configuration using YAML-based setup."""
 
-from typing import List
-
 from crewai import Agent, Crew, Process, Task, LLM
 from crewai.project import CrewBase, agent, crew, task
 
@@ -42,6 +40,7 @@ class MemberCenterCrew:
     def __init__(self):
         """Initialize the crew."""
         self._llm = get_bedrock_llm()
+        self._manager_agent = None
 
     @agent
     def profile_specialist(self) -> Agent:
@@ -95,11 +94,13 @@ class MemberCenterCrew:
     @agent
     def manager(self) -> Agent:
         """Create the manager agent that coordinates other agents."""
-        return Agent(
-            config=self.agents_config["manager"],
-            llm=self._llm,
-            tools=[],
-        )
+        if self._manager_agent is None:
+            self._manager_agent = Agent(
+                config=self.agents_config["manager"],
+                llm=self._llm,
+                tools=[],
+            )
+        return self._manager_agent
 
     @task
     def manager_task(self) -> Task:
@@ -111,12 +112,14 @@ class MemberCenterCrew:
     @crew
     def crew(self) -> Crew:
         """Create and return the crew with hierarchical process."""
+        # Get the manager agent for comparison
+        manager_agent = self.manager()
         # Filter out the manager from the agents list (it's set as manager_agent)
-        worker_agents = [a for a in self.agents if a.role.strip() != "AI Assistant Manager"]
+        worker_agents = [a for a in self.agents if a is not manager_agent]
         return Crew(
             agents=worker_agents,
             tasks=self.tasks,
             process=Process.hierarchical,
-            manager_agent=self.manager(),
+            manager_agent=manager_agent,
             verbose=True,
         )
